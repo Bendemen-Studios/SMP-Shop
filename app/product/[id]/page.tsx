@@ -10,7 +10,7 @@ import type { Product } from '@/lib/types';
 type DetailedProduct=Product&{description?:string;gallery?:string[];youtube?:string;server_choice?:boolean;server_options?:{id:number;name:string}[];quantity?:boolean;stock?:number;subscription?:boolean;duration_periodicity?:string|boolean|null;period_num?:number;custom_fields?:unknown[]};
 export default function ProductPage({params}:{params:Promise<{id:string}>}){
  const [product,setProduct]=useState<DetailedProduct|null>(null);const [selected,setSelected]=useState('');const [selectedImage,setSelectedImage]=useState('');const [qty,setQty]=useState(1);const [added,setAdded]=useState(false);const add=useCart(s=>s.add);
- useEffect(()=>{params.then(p=>fetch(`/api/products/${p.id}`).then(r=>r.ok?r.json():null).then(setProduct).catch(()=>setProduct(null)))},[params]);
+ useEffect(()=>{params.then(p=>fetch(`/api/products/${p.id}`).then(r=>r.ok?r.json():null).then((data:DetailedProduct|null)=>setProduct(data)).catch(()=>setProduct(null)))},[params]);
  if(!product)return <main><Header/><div className="empty"><div className="loading-machine">⚙</div>Product wordt uit de werkplaats gehaald...</div></main>;
  const images=[...(product.image?[product.image]:[]),...(product.gallery||[])].filter((x,i,a):x is string=>Boolean(x)&&a.indexOf(x)===i);const activeImage=selectedImage||images[0];const price=Number(product.price||0);const max=product.stock&&product.stock>0?Math.min(product.stock,99):99;
  function addToCart(){const server=selected?Number(selected):undefined;for(let i=0;i<qty;i++)add(product,{serverSelection:server});setAdded(true);setTimeout(()=>setAdded(false),1800)}
