@@ -5,6 +5,7 @@ import './responsive.css';
 import './shop-logo.css';
 import './account.css';
 import './checkout-result.css';
+import './discord.css';
 
 export const metadata: Metadata = {
   title: 'Steampunk SMP — Ontdek de Wereld van Machtige Machines',
