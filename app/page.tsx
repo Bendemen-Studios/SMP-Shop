@@ -11,7 +11,7 @@ const benefits:{icon:LucideIcon;title:string;text:string}[]=[
  {icon:ShieldCheck,title:'VEILIGE BETALINGEN',text:'Veilig en vertrouwd'},
  {icon:Zap,title:'DIRECTE LEVERING',text:'In-game na betaling'},
  {icon:HeartHandshake,title:'ONDERSTEUN DE SMP',text:'Help de community'},
- {icon:Package,title:'EXCLUSIEVE ITEMS',text:'Alleen hier verkrijgbaar'}
+ {icon:Package,title:'BOOST JE GAMEPLAY',text:'Help je eigen avontuur een handje'}
 ];
 const purchases=(p:Product)=>Number(p.purchases??p.purchase_count??p.sales??p.sales_count??p.sold??0)||0;
 const views=(p:Product)=>Number(p.views??p.view_count??p.product_views??0)||0;
