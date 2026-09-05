@@ -1,0 +1,32 @@
+.ranking-filters{display:flex;gap:8px;margin:-8px 0 24px}.ranking-filters button{padding:9px 14px;background:#120d09;border:1px solid #4f321a;color:#a78e70;font-size:10px;letter-spacing:1px}.ranking-filters button.active,.ranking-filters button:hover{border-color:#ba7430;color:#e4a153;background:#1b110a}.product-bottom button{flex:0 0 36px}.header-actions{margin-left:auto}.product-card{min-width:0}
+@media(max-width:900px){
+ .header{height:auto;min-height:68px;flex-wrap:wrap;gap:12px;padding-top:10px;padding-bottom:10px}
+ .header nav{display:flex;position:static;order:3;flex:1 0 100%;width:100%;overflow-x:auto;white-space:nowrap;gap:20px;padding:5px 0 3px;scrollbar-width:none}
+ .header nav::-webkit-scrollbar{display:none}
+ .header nav a{font-size:12px;flex:0 0 auto}
+ .products{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .section{padding-top:65px}
+ .shop-page{padding-top:50px}
+}
+@media(max-width:600px){
+ .header{padding-left:14px;padding-right:14px}
+ .brand{min-width:0}
+ .brand-gear{font-size:30px}
+ .brand b{font-size:14px;letter-spacing:2px}
+ .brand small{font-size:9px;letter-spacing:3px}
+ .header nav{gap:17px}
+ .header nav a{font-size:11px}
+ .cart-button{width:40px;height:40px}
+ .products{grid-template-columns:1fr;gap:14px}
+ .product-image{height:230px}
+ .product-body{padding:14px}
+ .product-body h3{font-size:16px}
+ .section{padding:55px 16px}
+ .section-head h2{font-size:30px}
+ .ranking-filters{overflow-x:auto;white-space:nowrap;padding-bottom:3px}
+ .ranking-filters button{flex:0 0 auto}
+ .shop-page{padding-left:16px;padding-right:16px}
+ .shop-title{font-size:35px}
+ .shop-tools{gap:9px}
+ .search-box,.sort-box{width:100%}
+}
