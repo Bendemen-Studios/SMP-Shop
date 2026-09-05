@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export default function Pending(){return <main><div className="empty"><span className="eyebrow">STOOMDRUK WORDT VERWERKT</span><h1 className="shop-title">Betaling <em>in behandeling</em></h1><p>Tip4Serv verwerkt je betaling. Controleer later je aankoopstatus.</p><Link className="brass-button" href="/">NAAR HOME →</Link></div></main>}
