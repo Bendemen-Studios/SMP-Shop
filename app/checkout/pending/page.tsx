@@ -16,7 +16,12 @@ export default function Pending() {
         const raw = sessionStorage.getItem('steampunk_checkout');
         if (!raw) { setMessage('Open je aankoopgeschiedenis om de actuele status te bekijken.'); return; }
         const checkout = JSON.parse(raw);
-        const params = new URLSearchParams({ email: String(checkout.email || ''), amount: String(checkout.amount || 0), startedAt: String(checkout.startedAt || Date.now()) });
+        const params = new URLSearchParams({
+          email: String(checkout.email || ''),
+          minecraftUsername: String(checkout.minecraftUsername || ''),
+          amount: String(checkout.amount || 0),
+          startedAt: String(checkout.startedAt || Date.now()),
+        });
         const response = await fetch(`/api/checkout/status?${params}`, { cache: 'no-store' });
         const data = await response.json();
         if (cancelled) return;
