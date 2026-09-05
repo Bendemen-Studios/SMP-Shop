@@ -4,17 +4,116 @@ import { useCart } from '@/lib/cart';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Minus, Plus, Trash2, Loader2, ShieldCheck, Cog, UserRound, ArrowRight, LockKeyhole } from 'lucide-react';
+
 const labels:Record<string,string>={email:'E-mailadres',minecraft_username:'Minecraft gebruikersnaam'};
 const label=(key:string)=>labels[key]||key.replaceAll('_',' ').replace(/\b\w/g,m=>m.toUpperCase());
 const SDK='https://js.tip4serv.com/tip4serv.min.js?v=1.0.16';
+
 export default function Cart(){
- const {items,setQty,remove,total}=useCart();const [store,setStore]=useState<number|null>(null);const [values,setValues]=useState<Record<string,string>>({email:'',minecraft_username:''});const [loading,setLoading]=useState(false);const [accountReady,setAccountReady]=useState(false);const [accountToken,setAccountToken]=useState<string|null>(null);const [error,setError]=useState('');
+ const {items,setQty,remove,total}=useCart();
+ const [store,setStore]=useState<number|null>(null);
+ const [values,setValues]=useState<Record<string,string>>({email:'',minecraft_username:''});
+ const [loading,setLoading]=useState(false);
+ const [accountReady,setAccountReady]=useState(false);
+ const [accountToken,setAccountToken]=useState<string|null>(null);
+ const [error,setError]=useState('');
  const hasSubscription=useMemo(()=>items.some(i=>i.purchaseMode==='subscribe'),[items]);
  const ids=['email','minecraft_username'];
- useEffect(()=>{fetch('/api/store').then(r=>r.json()).then(d=>setStore(d.id||null)).catch(()=>{});},[]);
- useEffect(()=>{if(!hasSubscription||!store)return;const existing=document.getElementById('tip4serv-cart-sdk');const sync=()=>setAccountToken((window as any).Tip4Serv?.OAuth?.Token?.()||null);if(existing){if(new URLSearchParams(location.search).has('tip4serv_access_token'))try{(window as any).Tip4Serv?.OAuth?.Save?.()}catch{}sync();setAccountReady(!!(window as any).Tip4Serv?.OAuth);return}const s=document.createElement('script');s.id='tip4serv-cart-sdk';s.src=SDK;s.async=true;s.setAttribute('data-store-id',String(store));s.onload=()=>{try{if(new URLSearchParams(location.search).has('tip4serv_access_token'))(window as any).Tip4Serv?.OAuth?.Save?.()}catch{}setAccountReady(!!(window as any).Tip4Serv?.OAuth);sync();const u=new URL(location.href);['tip4serv_access_token','error','state','code'].forEach(p=>u.searchParams.delete(p));history.replaceState({},document.title,u.pathname+u.search+u.hash)};document.head.appendChild(s);},[hasSubscription,store]);
- const loginForSubscription=async()=>{setError('');const oauth=(window as any).Tip4Serv?.OAuth;if(!oauth?.Connect){setError('De accountverbinding wordt nog geladen. Probeer het opnieuw.');return}try{await oauth.Connect({return_url:`${location.origin}/cart`,store_id:store||undefined});}catch(e){setError(e instanceof Error?e.message:'Inloggen mislukt.');}};
- useEffect(()=>{if(!hasSubscription)return;const sync=()=>setAccountToken((window as any).Tip4Serv?.OAuth?.Token?.()||null);sync();const timer=window.setInterval(sync,1000);return()=>window.clearInterval(timer)},[hasSubscription]);
- const checkout=async()=>{setError('');if(!store)return setError('De winkel kon niet worden geladen.');if(hasSubscription&&!accountToken)return setError('Voor een abonnement is een Mijn Account verplicht. Log eerst in en probeer daarna opnieuw.');if(!values.email?.trim())return setError('Vul je e-mailadres in.');if(!values.minecraft_username?.trim())return setError('Vul je Minecraft gebruikersnaam in.');setLoading(true);const startedAt=Date.now();const amount=Number(total().toFixed(2));try{const res=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({store,products:items.map(i=>({product_id:i.product.id,type:i.purchaseMode==='subscribe'?'subscribe':'addtocart',quantity:i.quantity,server_selection:i.serverSelection,custom_fields:i.customFields||{}})),user:Object.fromEntries(ids.map(id=>[id,values[id]?.trim()||''])),redirect_success_checkout:`${location.origin}/checkout/success`,redirect_canceled_checkout:`${location.origin}/checkout/canceled`,redirect_pending_checkout:`${location.origin}/checkout/pending`})});const data=await res.json();if(!res.ok)throw new Error(data.error||'Checkout mislukt');try{sessionStorage.setItem('steampunk_checkout',JSON.stringify({email:values.email.trim(),minecraftUsername:values.minecraft_username.trim(),amount,startedAt,hasSubscription}));}catch{}location.href=data.url;}catch(e){setError(e instanceof Error?e.message:'Checkout mislukt');setLoading(false)}};
+
+ useEffect(()=>{fetch('/api/store',{cache:'no-store'}).then(r=>r.json()).then(d=>setStore(Number(d?.id||d?.store?.id)||null)).catch(()=>{});},[]);
+
+ useEffect(()=>{
+   if(!hasSubscription||!store)return;
+   const existing=document.getElementById('tip4serv-cart-sdk');
+   const sync=()=>setAccountToken((window as any).Tip4Serv?.OAuth?.Token?.()||null);
+   if(existing){
+     if(new URLSearchParams(location.search).has('tip4serv_access_token'))try{(window as any).Tip4Serv?.OAuth?.Save?.()}catch{}
+     sync();
+     setAccountReady(!!(window as any).Tip4Serv?.OAuth);
+     return;
+   }
+   const s=document.createElement('script');
+   s.id='tip4serv-cart-sdk';
+   s.src=SDK;
+   s.async=true;
+   s.setAttribute('data-store-id',String(store));
+   s.onload=()=>{
+     try{if(new URLSearchParams(location.search).has('tip4serv_access_token'))(window as any).Tip4Serv?.OAuth?.Save?.()}catch{}
+     setAccountReady(!!(window as any).Tip4Serv?.OAuth);
+     sync();
+     const u=new URL(location.href);
+     ['tip4serv_access_token','error','state','code'].forEach(p=>u.searchParams.delete(p));
+     history.replaceState({},document.title,u.pathname+u.search+u.hash);
+   };
+   s.onerror=()=>setError('De accountverbinding kon niet worden geladen.');
+   document.head.appendChild(s);
+ },[hasSubscription,store]);
+
+ const loginForSubscription=async()=>{
+   setError('');
+   const oauth=(window as any).Tip4Serv?.OAuth;
+   if(!oauth?.Connect){setError('De accountverbinding wordt nog geladen. Probeer het opnieuw.');return}
+   try{await oauth.Connect({return_url:`${location.origin}/cart`});}
+   catch(e){setError(e instanceof Error?e.message:'Inloggen mislukt.');}
+ };
+
+ useEffect(()=>{
+   if(!hasSubscription)return;
+   const sync=()=>setAccountToken((window as any).Tip4Serv?.OAuth?.Token?.()||null);
+   sync();
+   const timer=window.setInterval(sync,1000);
+   return()=>window.clearInterval(timer)
+ },[hasSubscription]);
+
+ const checkout=async()=>{
+   setError('');
+   if(!store)return setError('De winkel kon niet worden geladen. Vernieuw de pagina en probeer opnieuw.');
+   if(hasSubscription&&!accountToken)return setError('Voor een abonnement is een Mijn Account verplicht. Log eerst in en probeer daarna opnieuw.');
+   if(!values.email?.trim())return setError('Vul je e-mailadres in.');
+   if(!values.minecraft_username?.trim())return setError('Vul je Minecraft gebruikersnaam in.');
+
+   setLoading(true);
+   const startedAt=Date.now();
+   const amount=Number(total().toFixed(2));
+
+   try{
+     const res=await fetch('/api/checkout',{
+       method:'POST',
+       headers:{'Content-Type':'application/json'},
+       cache:'no-store',
+       body:JSON.stringify({
+         store,
+         products:items.map(i=>({
+           product_id:i.product.id,
+           type:i.purchaseMode==='subscribe'?'subscribe':'addtocart',
+           quantity:i.quantity,
+           server_selection:i.serverSelection,
+           custom_fields:i.customFields||{},
+         })),
+         user:Object.fromEntries(ids.map(id=>[id,values[id]?.trim()||''])),
+         redirect_success_checkout:`${location.origin}/checkout/success`,
+         redirect_canceled_checkout:`${location.origin}/checkout/canceled`,
+         redirect_pending_checkout:`${location.origin}/checkout/pending`,
+       })
+     });
+
+     const raw=await res.text();
+     let data:any={};
+     try{data=raw?JSON.parse(raw):{}}catch{data={}}
+     if(!res.ok)throw new Error(data?.error||data?.message||'Checkout mislukt.');
+
+     const checkoutUrl=typeof data?.url==='string'?data.url:null;
+     if(!checkoutUrl||!/^https?:\/\//i.test(checkoutUrl)){
+       throw new Error('De betaalpagina kon niet worden geopend. Tip4Serv gaf geen geldige checkout-link terug.');
+     }
+
+     try{sessionStorage.setItem('steampunk_checkout',JSON.stringify({email:values.email.trim(),minecraftUsername:values.minecraft_username.trim(),amount,startedAt,hasSubscription}));}catch{}
+     window.location.assign(checkoutUrl);
+   }catch(e){
+     setError(e instanceof Error?e.message:'Checkout mislukt.');
+     setLoading(false);
+   }
+ };
+
  return <main><Header/><div className="cart-page"><span className="eyebrow">JOUW AANKOOP</span><h1 className="shop-title">Afrekenen bij het <em>Emporium</em></h1>{!items.length?<div className="empty"><Cog className="empty-gear" size={54}/><p>Je aankoop is nog leeg.</p><Link className="brass-button" href="/shop">NAAR HET EMPORIUM</Link></div>:<><div className="cart-list">{items.map(i=><div className="cart-row" key={`${i.product.id}-${i.purchaseMode||'once'}-${i.serverSelection||0}`}>{i.product.image?<img src={i.product.image} alt={i.product.name}/>:<div className="cart-thumb">⚙</div>}<div className="grow"><b>{i.product.name}</b><div className="muted-small">€ {i.product.price.toFixed(2).replace('.',',')} per stuk{i.purchaseMode==='subscribe'?' · Abonnement':' · Eenmalig'}{i.serverSelection?` · Server ${i.serverSelection}`:''}</div></div><div className="qty"><button onClick={()=>setQty(i.product.id,i.quantity-1)} aria-label="Verminder"><Minus size={14}/></button><span>{i.quantity}</span><button onClick={()=>setQty(i.product.id,i.quantity+1)} aria-label="Verhoog"><Plus size={14}/></button></div><button className="remove-btn" onClick={()=>remove(i.product.id)} aria-label="Verwijder"><Trash2 size={16}/></button></div>)}</div>{hasSubscription?<div className="account-cart-link subscription-required"><div><LockKeyhole size={20}/><span><b>Account verplicht voor abonnementen</b><small>Log in met je Mijn Account om je abonnement af te sluiten en later te kunnen beheren of annuleren.</small></span></div>{accountToken?<span className="account-logged"><UserRound size={14}/> ACCOUNT INGELOGD</span>:<button onClick={loginForSubscription} disabled={!accountReady}>{accountReady?'INLOGGEN':'ACCOUNT LADEN...'}</button>}</div>:<div className="account-cart-link"><div><UserRound size={20}/><span><b>Heb je al een account?</b><small>Een account is niet nodig voor een eenmalige aankoop.</small></span></div><Link href="/account">MIJN ACCOUNT <ArrowRight size={14}/></Link></div>}<div className="checkout"><div className="checkout-head"><div><span className="eyebrow"><ShieldCheck size={14}/> VEILIG AFREKENEN</span><h2>Afrekenen bij het Emporium</h2></div><span className="tip-badge">SECURE</span></div><p className="checkout-intro">Voor een eenmalige aankoop heb je alleen je Minecraft gebruikersnaam en e-mailadres nodig.{hasSubscription?' Voor abonnementen moet je eerst zijn ingelogd met je Mijn Account.':''}</p>{ids.map(id=><label key={id}>{label(id)}<input value={values[id]||''} onChange={e=>setValues(v=>({...v,[id]:e.target.value}))} placeholder={id==='email'?'jij@example.com':'Jouw Minecraft gebruikersnaam'} required /></label>)}{error&&<p className="checkout-error">{error}</p>}<div className="total"><span>Totaal</span><strong>€ {total().toFixed(2).replace('.',',')}</strong></div><button className="brass-button checkout-button" onClick={checkout} disabled={loading||Boolean(hasSubscription&&!accountToken)}>{loading?<><Loader2 className="spin" size={17}/> BETALING WORDT GESTART...</>:hasSubscription&&!accountToken?<><LockKeyhole size={16}/> EERST INLOGGEN</>:<>DOOR NAAR BETALING <span>→</span></>}</button></div></>}</div></main>
 }
