@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './steampunk.css';
 
 export const metadata: Metadata = {
   title: 'Steampunk SMP — Ontdek de Wereld van Machtige Machines',
