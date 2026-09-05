@@ -6,7 +6,7 @@ import { useCart } from '@/lib/cart';
 export function Header(){
  const count=useCart(s=>s.items.reduce((n,i)=>n+i.quantity,0));
  return <header className="header brass-frame">
-  <Link href="/" className="brand"><span className="brand-gear">⚙</span><span><b>STEAMPUNK</b><small>SMP</small></span></Link>
+  <Link href="/" className="brand" aria-label="Steampunk SMP home"><img className="brand-logo" src="/shop-logo-128.svg" alt="Steampunk SMP"/><span className="brand-wordmark"><b>STEAMPUNK</b><small>SMP</small></span></Link>
   <nav><Link href="/">Home</Link><Link href="/shop">Shop</Link></nav>
   <div className="header-actions"><Link href="/cart" className="cart-button" aria-label="Winkelwagen"><ShoppingCart size={19}/><i>{count}</i></Link></div>
  </header>
