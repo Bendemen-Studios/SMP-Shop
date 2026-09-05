@@ -62,9 +62,12 @@ export async function POST(request: NextRequest){
       redirect_pending_checkout:body.redirect_pending_checkout,
     };
 
-    const response=await fetch(`${config.api.baseUrl}/store/checkout?store=${encodeURIComponent(body.store)}&redirect=true`,{
+    // Tip4Serv's Checkout API returns the hosted checkout URL from the
+    // normal /store/checkout endpoint. Do not add redirect=true here;
+    // the custom frontend performs the redirect itself after receiving url.
+    const response=await fetch(`${config.api.baseUrl}/store/checkout?store=${encodeURIComponent(body.store)}`,{
       method:'POST',
-      headers:{'Content-Type':'application/json',Authorization:`Bearer ${config.api.key}`},
+      headers:{'Content-Type':'application/json',Authorization:`Bearer ${config.api.key}`,Accept:'application/json'},
       body:JSON.stringify(payload),
       cache:'no-store',
     });
