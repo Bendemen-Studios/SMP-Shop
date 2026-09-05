@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ShoppingCart, ArrowLeft, CheckCircle2, Package, Zap, ShieldCheck, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { Header } from '@/components/header';
 import { useCart } from '@/lib/cart';
 import type { Product } from '@/lib/types';
 import { sanitizeRichText } from '@/lib/rich-text';
