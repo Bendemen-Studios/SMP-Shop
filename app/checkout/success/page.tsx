@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export default function Success(){return <main><div className="empty"><span className="eyebrow">MACHINE GEACTIVEERD</span><h1 className="shop-title">Betaling <em>geslaagd</em></h1><p>Je aankoop wordt door Tip4Serv verwerkt en geleverd.</p><Link className="brass-button" href="/shop">TERUG NAAR DE WERKPLAATS →</Link></div></main>}
