@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/lib/config';
 
+function extractCheckoutUrl(data: any): string | null {
+  const candidates = [
+    data?.url,
+    data?.checkout_url,
+    data?.redirect_url,
+    data?.checkout?.url,
+    data?.checkout?.checkout_url,
+    data?.data?.url,
+    data?.data?.checkout_url,
+    data?.result?.url,
+    data?.result?.checkout_url,
+  ];
+  const url = candidates.find((value) => typeof value === 'string' && /^https?:\/\//i.test(value));
+  return url || null;
+}
+
 export async function POST(request: NextRequest){
   try{
     const body=await request.json();
@@ -13,8 +29,6 @@ export async function POST(request: NextRequest){
       return NextResponse.json({error:'Vul een geldige Minecraft gebruikersnaam in.'},{status:400});
     }
 
-    // Tip4Serv can use the Minecraft UUID as the stable player identifier on an online-mode server.
-    // The customer only has to enter their familiar Minecraft username; we resolve it here.
     const profileResponse=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(minecraftUsername)}`,{
       headers:{Accept:'application/json'},
       cache:'no-store',
@@ -39,10 +53,39 @@ export async function POST(request: NextRequest){
     }
 
     const user={...body.user,minecraft_username:profile.name,minecraft_uuid:profile.id};
-    const payload={store:body.store,products,user,redirect_success_checkout:body.redirect_success_checkout,redirect_canceled_checkout:body.redirect_canceled_checkout,redirect_pending_checkout:body.redirect_pending_checkout};
-    const response=await fetch(`${config.api.baseUrl}/store/checkout?store=${encodeURIComponent(body.store)}&redirect=true`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${config.api.key}`},body:JSON.stringify(payload)});
-    const text=await response.text(); let data:any; try{data=JSON.parse(text)}catch{data={error:text.slice(0,300)}}
-    if(!response.ok) return NextResponse.json({error:data?.error||'Checkout kon niet worden aangemaakt.'},{status:response.status});
-    return NextResponse.json(data);
-  }catch(error){return NextResponse.json({error:error instanceof Error?error.message:'Checkout mislukt'},{status:500})}
+    const payload={
+      store:body.store,
+      products,
+      user,
+      redirect_success_checkout:body.redirect_success_checkout,
+      redirect_canceled_checkout:body.redirect_canceled_checkout,
+      redirect_pending_checkout:body.redirect_pending_checkout,
+    };
+
+    const response=await fetch(`${config.api.baseUrl}/store/checkout?store=${encodeURIComponent(body.store)}&redirect=true`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:`Bearer ${config.api.key}`},
+      body:JSON.stringify(payload),
+      cache:'no-store',
+    });
+
+    const text=await response.text();
+    let data:any;
+    try{data=JSON.parse(text)}catch{data={error:text.slice(0,500)}}
+
+    if(!response.ok){
+      return NextResponse.json({error:data?.error?.message||data?.error||data?.message||'Checkout kon niet worden aangemaakt.'},{status:response.status});
+    }
+
+    const url=extractCheckoutUrl(data);
+    if(!url){
+      console.error('Tip4Serv checkout returned no URL',data);
+      return NextResponse.json({error:'Tip4Serv heeft geen betaalpagina teruggegeven. Controleer de checkout-configuratie en probeer het opnieuw.'},{status:502});
+    }
+
+    return NextResponse.json({url});
+  }catch(error){
+    console.error('Checkout error',error);
+    return NextResponse.json({error:error instanceof Error?error.message:'Checkout mislukt'},{status:500});
+  }
 }
