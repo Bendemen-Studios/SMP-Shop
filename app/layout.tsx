@@ -4,8 +4,6 @@ import './steampunk.css';
 import './responsive.css';
 import './shop-logo.css';
 import './account.css';
-import './ajax.css';
-import { AjaxNavigation } from '@/components/ajax-navigation';
 
 export const metadata: Metadata = {
   title: 'Steampunk SMP — Ontdek de Wereld van Machtige Machines',
@@ -28,5 +26,5 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     .purchase-choice-grid .purchase-choice.active b{color:#f0c88f!important}
     .purchase-choice-grid .purchase-choice.active small{color:#b9966d!important}
     @media(max-width:600px){.purchase-choice-grid{grid-template-columns:1fr!important}.purchase-choice-grid .purchase-choice{min-height:64px!important}}
-  `}}/><AjaxNavigation/>{children}</body></html>;
+  `}}/>{children}</body></html>;
 }
