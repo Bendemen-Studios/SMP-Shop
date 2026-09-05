@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export default function Canceled(){return <main><div className="empty"><span className="eyebrow">MACHINE GESTOPT</span><h1 className="shop-title">Betaling <em>geannuleerd</em></h1><p>Er is niets afgeschreven. Je kunt je winkelwagen opnieuw proberen.</p><Link className="brass-button" href="/cart">TERUG NAAR WINKELWAGEN →</Link></div></main>}
