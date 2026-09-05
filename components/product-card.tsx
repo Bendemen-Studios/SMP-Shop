@@ -1,21 +1,13 @@
 'use client';
 import { motion } from 'framer-motion';
-import { ShoppingCart, ArrowUpRight, Sparkles } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import type { Product } from '@/lib/types';
 import { useCart } from '@/lib/cart';
 
 function cleanDescription(value?: string) {
  if (!value) return 'Een krachtig onderdeel voor jouw avontuur in Steampunk SMP.';
- return value
-  .replace(/<br\s*\/?>/gi, ' ')
-  .replace(/<[^>]*>/g, ' ')
-  .replace(/&nbsp;/gi, ' ')
-  .replace(/&amp;/gi, '&')
-  .replace(/&quot;/gi, '"')
-  .replace(/&#39;/gi, "'")
-  .replace(/\s+/g, ' ')
-  .trim();
+ return value.replace(/<br\s*\/?>/gi,' ').replace(/<[^>]*>/g,' ').replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g,' ').trim();
 }
 
 export function ProductCard({product}:{product:Product}){
@@ -30,8 +22,7 @@ export function ProductCard({product}:{product:Product}){
    <span className="scanline"/>
   </Link>
   <div className="product-body"><div><h3>{product.name}</h3><p>{description}</p></div>
-   <div className="product-bottom"><strong>€ {price}</strong><button onClick={()=>add(product)} aria-label={`Voeg ${product.name} toe`}><ShoppingCart size={18}/></button><Link href={`/product/${product.id}`} className="more" aria-label="Bekijk product"><ArrowUpRight size={17}/></Link></div>
+   <div className="product-bottom"><strong>€ {price}</strong><button onClick={()=>add(product)} aria-label={`Voeg ${product.name} toe`}><ShoppingCart size={18}/></button></div>
   </div>
-  <div className="product-rivet"><Sparkles size={11}/> TIP4SERV</div>
  </motion.article>
 }
