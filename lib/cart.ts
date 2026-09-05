@@ -12,7 +12,7 @@ export const useCart=create<CartStore>()(persist((set,get)=>({
    const found=state.items.find(i=>i.product.id===product.id&&i.purchaseMode===mode&&i.serverSelection===options.serverSelection);
    return {items:found?state.items.map(i=>i===found?{...i,quantity:i.quantity+1}:{...i}):[...state.items,{product,quantity:1,...options,purchaseMode:mode}]};
  }),
- remove:id=>set(state=>({items:state.items.filter(i=>i.product.id!==id})),
+ remove:id=>set(state=>({items:state.items.filter(i=>i.product.id!==id)})),
  setQty:(id,quantity)=>set(state=>({items:quantity<1?state.items.filter(i=>i.product.id!==id):state.items.map(i=>i.product.id===id?{...i,quantity}:{...i})})),
  clear:()=>set({items:[]}),
  total:()=>get().items.reduce((sum,i)=>sum+i.product.price*i.quantity,0),
