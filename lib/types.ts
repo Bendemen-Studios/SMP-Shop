@@ -7,4 +7,4 @@ export type Product = {
 };
 export type Category = { id: number; name: string; slug: string; hide?: boolean; image?: string; description?: string };
 export type Store = { id: number; title: string; description?: string; currency?: string; logo?: string; domain?: string };
-export type CartItem = { product: Product; quantity: number; serverSelection?: number; customFields?: Record<string, unknown> };
+export type CartItem = { product: Product; quantity: number; purchaseMode?: 'once' | 'subscribe'; serverSelection?: number; customFields?: Record<string, unknown> };
